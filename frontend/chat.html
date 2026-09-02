@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云上大耳兔 · AI康复助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: #f5f7fa;
+        }
+
+        .top-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 { font-size: 20px; }
+
+        .nav-links { display: flex; gap: 16px; }
+
+        .nav-link {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .main-content {
+            max-width: 800px;
+            margin: 24px auto;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 80px);
+        }
+
+        .chat-container {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .chat-header h2 { color: #495057; margin-bottom: 4px; }
+        .chat-header p { color: #adb5bd; font-size: 13px; }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-msg {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-msg.user {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-msg.ai {
+            background: #f8f9fa;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 14px 18px;
+            background: #f8f9fa;
+            border-radius: 16px;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #adb5bd;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .input-area input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .send-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .quick-prompts {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 6px 14px;
+            background: #f0f2ff;
+            color: #667eea;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover { background: #667eea; color: white; }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 0 12px; }
+            .chat-box { padding: 16px; }
+            .input-area { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>🐰 云上大耳兔 · AI康复助手</h1>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">📚 知识库</a>
+            <a href="/chat" class="nav-link active">💬 AI助手</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>🤖 智慧康复AI助手</h2>
+                <p>基于知识库的专业康复医学问答 · 从聆听开始的治愈陪伴</p>
+            </div>
+
+            <div class="chat-box" id="chatBox">
+                <div class="chat-msg ai">你好！我是云上大耳兔 🐰，你的康复医学AI助手。我可以帮你：
+
+✅ 解答康复医学专业问题
+✅ 提供临床康复路径建议
+✅ 分析运动损伤康复方案
+✅ 生成个性化康复计划参考
+
+请随时向我提问！</div>
+            </div>
+
+            <div class="quick-prompts">
+                <button class="quick-btn" onclick="usePrompt('脑卒中康复有哪些主要方法？')">🧠 脑卒中康复</button>
+                <button class="quick-btn" onclick="usePrompt('运动损伤如何科学康复？')">🏃 运动损伤</button>
+                <button class="quick-btn" onclick="usePrompt('老年康复护理要注意什么？')">👴 老年康复</button>
+                <button class="quick-btn" onclick="usePrompt('脊髓损伤康复指南有哪些？')">🦴 脊髓损伤</button>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="chatInput" placeholder="输入康复医学相关问题..." onkeydown="if(event.key==='Enter')sendMessage()">
+                <button class="send-btn" onclick="sendMessage()" id="sendBtn">📨 发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const box = document.getElementById('chatBox');
+            const sendBtn = document.getElementById('sendBtn');
+
+            // 添加用户消息
+            box.innerHTML += `<div class="chat-msg user">${escapeHtml(question)}</div>`;
+            input.value = '';
+            sendBtn.disabled = true;
+            sendBtn.textContent = '⏳';
+
+            // 添加加载指示器
+            const typingId = 'typing-' + Date.now();
+            box.innerHTML += `<div class="typing-indicator" id="${typingId}">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>`;
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                const res = await fetch(`${API}/api/chat`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question })
+                });
+                
+                const data = await res.json();
+                
+                // 移除加载指示器
+                document.getElementById(typingId)?.remove();
+                
+                // 添加AI回复
+                box.innerHTML += `<div class="chat-msg ai">🤖 ${escapeHtml(data.answer)}</div>`;
+            } catch (err) {
+                document.getElementById(typingId)?.remove();
+                box.innerHTML += `<div class="chat-msg ai">⚠️ 请求失败: ${err.message}</div>`;
+            }
+
+            sendBtn.disabled = false;
+            sendBtn.textContent = '📨 发送';
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function usePrompt(prompt) {
+            document.getElementById('chatInput').value = prompt;
+            sendMessage();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

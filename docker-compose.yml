@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  # 向量数据库
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: knowledge-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./data/qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+  # LLM引擎 - Ollama
+  ollama:
+    image: ollama/ollama:latest
+    container_name: knowledge-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./data/ollama_models:/root/.ollama
+    restart: unless-stopped
+
+  # 知识管理后端
+  knowledge-api:
+    build:
+      context: ./backend/knowledge_api
+      dockerfile: Dockerfile
+    container_name: knowledge-api
+    ports:
+      - "8000:8000"
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - EMBEDDING_MODEL=nomic-embed-text
+      - LLM_MODEL=mistral:7b
+    depends_on:
+      - qdrant
+      - ollama
+    restart: unless-stopped
+
+  # UI管理后台 (百年AI)
+  ui-backend:
+    build:
+      context: ./frontend/ui-backend
+      dockerfile: Dockerfile
+    container_name: knowledge-ui-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - knowledge-api
+    restart: unless-stopped
+
+  # 对话前端 (大耳兔)
+  chat-frontend:
+    build:
+      context: ./frontend/chat-frontend
+      dockerfile: Dockerfile
+    container_name: knowledge-chat-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - ui-backend
+    restart: unless-stopped

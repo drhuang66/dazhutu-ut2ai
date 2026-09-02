@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>🐰 云上大耳兔 - 康复医学智能助手</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#fafafa;height:100vh;display:flex;flex-direction:column}
+
+/* ===== 登录页 ===== */
+.login-page{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#e8d5f5,#d4e6f5)}
+.login-box{background:#fff;border-radius:16px;padding:40px;width:380px;box-shadow:0 8px 32px rgba(0,0,0,.1)}
+.login-box h1{text-align:center;font-size:22px;color:#6b46c1;margin-bottom:8px}
+.login-box .subtitle{text-align:center;color:#999;font-size:13px;margin-bottom:28px}
+.login-box input{width:100%;padding:12px 16px;border:2px solid #e0d5f0;border-radius:10px;font-size:14px;outline:none;transition:border .2s;margin-bottom:16px}
+.login-box input:focus{border-color:#6b46c1}
+.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,#6b46c1,#805ad5);color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer;transition:transform .1s}
+.btn-primary:hover{transform:scale(1.02)}
+.login-box .tip{text-align:center;margin-top:16px;color:#aaa;font-size:12px}
+
+/* ===== 对话页 ===== */
+.chat-page{display:none;flex-direction:column;height:100vh}
+.chat-header{background:linear-gradient(135deg,#9f7aea,#805ad5);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:12px}
+.chat-header .avatar{width:42px;height:42px;border-radius:50%;background:#fff;color:#6b46c1;display:flex;align-items:center;justify-content:center;font-size:22px}
+.chat-header h1{font-size:18px;font-weight:600}
+.chat-header .desc{font-size:12px;opacity:.85;margin-top:2px}
+.chat-header .user-info{margin-left:auto;text-align:right;font-size:12px;opacity:.9}
+
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.message{display:flex;gap:10px;max-width:80%;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.message-user{margin-left:auto;flex-direction:row-reverse}
+.message-ai .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#9f7aea,#805ad5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.message-user .avatar{width:36px;height:36px;border-radius:50%;background:#4a5568;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.bubble{padding:12px 16px;border-radius:16px;line-height:1.65;font-size:14px;white-space:pre-wrap}
+.message-ai .bubble{background:#fff;border:1px solid #e8e0f0;border-top-left-radius:4px}
+.message-user .bubble{background:linear-gradient(135deg,#6b46c1,#805ad5);color:#fff;border-top-right-radius:4px}
+.typing-indicator span{display:inline-block;width:6px;height:6px;background:#9f7aea;border-radius:50%;margin:0 2px;animation:bounce .6s infinite alternate}
+@keyframes bounce{to{transform:translateY(-6px)}}
+
+.chat-input-area{padding:16px 24px;background:#fff;border-top:1px solid #e8e0f0;display:flex;gap:12px;align-items:flex-end}
+.chat-input-area textarea{flex:1;padding:12px 16px;border:2px solid #e0d5f0;border-radius:12px;font-size:14px;font-family:inherit;outline:none;resize:none;line-height:1.5;max-height:120px;min-height:44px}
+.chat-input-area textarea:focus{border-color:#9f7aea}
+.send-btn{padding:12px 20px;background:linear-gradient(135deg,#9f7aea,#805ad5);color:#fff;border:none;border-radius:12px;font-size:14px;cursor:pointer;white-space:nowrap;height:44px;display:flex;align-items:center;gap:6px}
+.send-btn:hover{opacity:.9}
+.send-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.chat-tools{display:flex;gap:8px;margin-top:10px}
+.tool-btn{padding:6px 12px;background:#f3e8ff;color:#6b46c1;border:none;border-radius:8px;font-size:12px;cursor:pointer}
+.tool-btn:hover{background:#e8d5f5}
+
+.quick-questions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:0 16px}
+.qchip{padding:7px 14px;background:#fafafa;border:1px solid #e0d5f0;border-radius:20px;font-size:13px;cursor:pointer;transition:all .2s}
+.qchip:hover{background:#f3e8ff;border-color:#9f7aea;color:#6b46c1}
+
+.welcome-card{background:#fff;border-radius:16px;padding:32px;text-align:center;margin:auto;max-width:500px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.welcome-card .logo{font-size:48px;margin-bottom:12px}
+.welcome-card h2{color:#6b46c1;margin-bottom:8px}
+.welcome-card p{color:#888;font-size:14px;margin-bottom:20px;line-height:1.6}
+
+/* 移动端 */
+@media(max-width:640px){
+  .login-box{margin:20px;width:auto}
+  .message{max-width:90%}
+  .welcome-card{margin:20px auto;padding:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== 登录页 ========== -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <h1>🐰 云上大耳兔</h1>
+    <p class="subtitle">康复医学智能助手 · 本地版</p>
+    <input type="text" id="username" placeholder="用户名" value="康复科主任"/>
+    <input type="password" id="password" placeholder="密码（可留空）" value=""/>
+    <button class="btn-primary" onclick="doLogin()">🐰 进入云上大耳兔</button>
+    <p class="tip">本地部署版 · 连接至百年AI知识库</p>
+  </div>
+</div>
+
+<!-- ========== 对话页 ========== -->
+<div class="chat-page" id="chatPage">
+  <div class="chat-header">
+    <div class="avatar">🐰</div>
+    <div>
+      <h1>云上大耳兔</h1>
+      <div class="desc">康复医学智能助手 · 连接百年AI知识库</div>
+    </div>
+    <div class="user-info" id="userInfo">👤 康复科主任<br/><a href="#" onclick="doLogout()" style="color:#fff;font-size:11px">退出</a></div>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <!-- 欢迎卡片 -->
+    <div class="welcome-card" id="welcomeCard">
+      <div class="logo">🐰</div>
+      <h2>你好，我是云上大耳兔！</h2>
+      <p>我是你的康复医学AI助手，已连接百年AI知识库。<br/>我可以帮你：<br/>• 解答康复医学专业问题<br/>• 提供临床路径指导<br/>• 生成SOP流程文档<br/>• 辅助科研与教学</p>
+      <div class="chat-tools">
+        <button class="tool-btn" onclick="fillInput('脑卒中康复临床路径有哪些？')">📋 临床路径</button>
+        <button class="tool-btn" onclick="fillInput('脊髓损伤康复方案是什么？')">🏥 康复方案</button>
+        <button class="tool-btn" onclick="fillInput('老年康复护理SOP流程')">👴 老年护理</button>
+        <button class="tool-btn" onclick="fillInput('运动损伤如何康复？')">🏃 运动损伤</button>
+      </div>
+    </div>
+
+    <!-- 快捷问题 -->
+    <div class="quick-questions" id="quickQuestions">
+      <span class="qchip" onclick="askQuestion('脑卒中康复应该在什么时候开始？')">脑卒中康复时机</span>
+      <span class="qchip" onclick="askQuestion('脊髓损伤的主要治疗手段有哪些？')">脊髓损伤治疗</span>
+      <span class="qchip" onclick="askQuestion('如何预防老年患者并发症？')">老年患者护理</span>
+      <span class="qchip" onclick="askQuestion('RICE原则是什么？')">运动损伤处理</span>
+      <span class="qchip" onclick="askQuestion('帮我整理一份康复评估清单')">生成评估清单</span>
+    </div>
+  </div>
+
+  <div class="chat-input-area">
+    <textarea id="chatInput" rows="1" placeholder="输入康复医学相关问题..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
+    <button class="send-btn" onclick="sendMessage()" id="sendBtn">📨 发送</button>
+  </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8000';
+let currentUser = '';
+
+// ===== 登录/登出 =====
+function doLogin(){
+  const username = document.getElementById('username').value.trim() || '用户';
+  currentUser = username;
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('chatPage').style.display = 'flex';
+  document.getElementById('userInfo').innerHTML = `👤 ${username}<br/><a href="#" onclick="doLogout()" style="color:#fff;font-size:11px">退出</a>`;
+  checkConnection();
+}
+
+function doLogout(){
+  currentUser = '';
+  document.getElementById('chatPage').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+
+// ===== 连接检查 =====
+async function checkConnection(){
+  try{
+    const r = await fetch(API+'/health');
+    if(r.ok) showStatus(true);
+    else showStatus(false);
+  }catch{showStatus(false)}
+}
+
+function showStatus(connected){
+  const desc = document.querySelector('.chat-header .desc');
+  if(connected){
+    desc.textContent = '✅ 已连接至百年AI知识库 | Qwen3.6-35B-A3B-Q8_0';
+    desc.style.color = '#fff';
+  }else{
+    desc.textContent = '❌ 知识库服务未连接 | 请启动后端API';
+    desc.style.color = '#ffcccb';
+  }
+}
+
+// ===== 消息发送 =====
+async function sendMessage(){
+  const input = document.getElementById('chatInput');
+  const question = input.value.trim();
+  if(!question) return;
+
+  // 隐藏欢迎卡片和快捷问题
+  document.getElementById('welcomeCard').style.display = 'none';
+  document.getElementById('quickQuestions').style.display = 'none';
+
+  // 添加用户消息
+  addMessage('user', question);
+  input.value = '';
+  input.style.height = 'auto';
+
+  // 显示加载状态
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+  sendBtn.textContent = '🤔...';
+
+  // 添加AI思考中消息
+  const loadingId = addTyping();
+
+  try{
+    const response = await fetch(API+'/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({question: question})
+    });
+
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    removeTyping(loadingId);
+    addMessage('ai', data.answer || '抱歉，暂时无法回答');
+
+  }catch(error){
+    removeTyping(loadingId);
+    addMessage('ai', `⚠️ 请求失败：${error.message}\n\n请检查后端API是否正常运行（http://127.0.0.1:8000）`);
+  }finally{
+    sendBtn.disabled = false;
+    sendBtn.textContent = '📨 发送';
+  }
+
+  // 滚动到底部
+  const messages = document.getElementById('chatMessages');
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function addMessage(role, text){
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `message message-${role}`;
+
+  const avatarContent = role === 'user' ? '👤' : '🐰';
+
+  div.innerHTML = `
+    <div class="avatar">${avatarContent}</div>
+    <div class="bubble">${escapeHtml(text)}</div>
+  `;
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function addTyping(){
+  const container = document.getElementById('chatMessages');
+  const id = 'typing-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'message message-ai';
+  div.id = id;
+
+  div.innerHTML = `
+    <div class="avatar">🐰</div>
+    <div class="bubble">
+      <span class="typing-indicator"><span></span><span></span><span></span></span>
+      <span style="color:#9f7aea;font-size:12px;margin-left:6px">思考中...</span>
+    </div>
+  `;
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+
+function removeTyping(id){
+  const el = document.getElementById(id);
+  if(el) el.remove();
+}
+
+function escapeHtml(text){
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML.replace(/\n/g, '<br/>');
+}
+
+// ===== 快捷输入 =====
+function fillInput(text){
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+function askQuestion(question){
+  document.getElementById('chatInput').value = question;
+  sendMessage();
+}
+
+// ===== 自动调整textarea高度 =====
+document.getElementById('chatInput')?.addEventListener('input', function(){
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// ===== Enter键登录 =====
+document.getElementById('password')?.addEventListener('keydown', function(e){
+  if(e.key === 'Enter') doLogin();
+});
+
+// ===== 页面加载检查连接 =====
+window.addEventListener('load', () => {
+  // 登录页也检查连接
+  fetch(API+'/health').then(r=>{if(r.ok) document.querySelector('.login-box .tip').textContent='✅ 知识库服务已连接'}).catch(()=>{});
+});
+</script>
+
+</body>
+</html>

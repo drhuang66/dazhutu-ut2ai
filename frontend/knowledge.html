@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云上大耳兔 · 仪表盘</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .top-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .top-bar h1 { font-size: 20px; }
+
+        .nav-links { display: flex; gap: 16px; }
+
+        .nav-link {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .content { max-width: 1200px; margin: 24px auto; padding: 0 24px; }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #495057;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        textarea { resize: vertical; min-height: 80px; }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .delete-btn {
+            background: #dc3545 !important;
+            padding: 6px 12px !important;
+            font-size: 12px !important;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tag-clinical { background: #e3f2fd; color: #1976d2; }
+        .tag-sop { background: #fff3e0; color: #e65100; }
+        .tag-research { background: #f3e5f5; color: #7b1fa2; }
+        .tag-general { background: #f8f9fa; color: #495057; }
+
+        .doc-list, .search-list { list-style: none; max-height: 300px; overflow-y: auto; }
+
+        .doc-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-item:last-child { border-bottom: none; }
+
+        .chat-box {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 16px;
+            background: #fafbfc;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .chat-msg {
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .chat-msg.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-msg.ai {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-row { display: flex; gap: 8px; }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; gap: 12px; }
+            .nav-links { flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>🐰 云上大耳兔 · 智慧康复平台</h1>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link active">📚 知识库</a>
+            <a href="/chat" class="nav-link">💬 AI助手</a>
+        </div>
+        <div class="user-info">
+            <span id="userName"></span>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="grid-2">
+            <!-- 左侧：文档管理 -->
+            <div>
+                <div class="section">
+                    <h2>⚡ 一键填充示例数据</h2>
+                    <button onclick="seedData()" id="btnSeed">📥 填充4条示例数据</button>
+                </div>
+
+                <div class="section">
+                    <h2>📤 上传文本到知识库</h2>
+                    <select id="category">
+                        <option value="general">通用知识</option>
+                        <option value="clinical">临床路径</option>
+                        <option value="sop">SOP流程</option>
+                        <option value="research">科研教学</option>
+                    </select>
+                    <textarea id="textContent" placeholder="粘贴康复医学相关文本内容..."></textarea>
+                    <input type="text" id="docTitle" placeholder="文档标题（可选）">
+                    <button onclick="uploadText()" id="btnUpload">📎 上传到知识库</button>
+                </div>
+
+                <div class="section">
+                    <h2>📋 知识库文档清单</h2>
+                    <ul class="doc-list" id="docList"><li style="padding:20px;text-align:center;color:#999;">加载中...</li></ul>
+                </div>
+            </div>
+
+            <!-- 右侧：搜索与AI对话 -->
+            <div>
+                <div class="section">
+                    <h2>🔍 知识库智能搜索</h2>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="searchQuery" placeholder="输入关键词..." onkeydown="if(event.key==='Enter')doSearch()" style="margin-bottom:0;">
+                        <button onclick="doSearch()">🔍</button>
+                    </div>
+                    <ul class="search-list" id="searchResults"></ul>
+                </div>
+
+                <div class="section">
+                    <h2>🤖 AI康复助手</h2>
+                    <div class="chat-box" id="chatBox">
+                        <div class="chat-msg ai">你好！我是云上大耳兔 🐰，你的康复医学AI助手。请输入专业问题，我将基于知识库为你解答。</div>
+                    </div>
+                    <div class="chat-row">
+                        <input type="text" id="chatInput" placeholder="输入康复医学相关问题..." onkeydown="if(event.key==='Enter')doChat()" style="margin-bottom:0;">
+                        <button onclick="doChat()" id="btnChat">💬 提问</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        const token = localStorage.getItem('auth_token');
+
+        // 认证检查
+        if (!token) {
+            window.location.href = '/login#register';
+        } else {
+            fetch(`${API}/api/auth/me?token=${token}`)
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(data => {
+                    document.getElementById('userName').textContent = `👤 ${data.nickname || data.username}`;
+                })
+                .catch(() => {
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/login#register';
+                });
+        }
+
+        async function apiRequest(url, options = {}) {
+            const params = new URLSearchParams(window.location.search);
+            if (!options.headers?.['Content-Type']?.includes('application/json')) {
+                url += `?token=${encodeURIComponent(token)}`;
+            }
+            return fetch(API + url, options);
+        }
+
+        function logout() {
+            localStorage.removeItem('auth_token');
+            window.location.href = '/login';
+        }
+
+        // 填充示例数据
+        async function seedData() {
+            const btn = document.getElementById('btnSeed');
+            btn.disabled = true;
+            btn.textContent = '⏳ 填充中...';
+            try {
+                await apiRequest('/api/knowledge/seed', { method: 'POST', headers: {'Content-Type': 'application/json'} });
+                loadDocuments();
+                btn.textContent = '✅ 已填充，可再次填充';
+            } catch (e) {
+                alert('填充失败: ' + e.message);
+                btn.textContent = '📥 填充4条示例数据';
+                btn.disabled = false;
+            }
+        }
+
+        // 上传文本
+        async function uploadText() {
+            const text = document.getElementById('textContent').value.trim();
+            if (!text) return alert('请输入内容');
+            
+            const btn = document.getElementById('btnUpload');
+            btn.disabled = true;
+            btn.textContent = '⏳ 上传中...';
+
+            try {
+                const fd = new FormData();
+                fd.append('text', text);
+                fd.append('title', document.getElementById('docTitle').value.trim() || '新文档');
+                fd.append('category', document.getElementById('category').value);
+                
+                await apiRequest('/api/knowledge/upload-text', { method: 'POST', body: fd });
+                document.getElementById('textContent').value = '';
+                document.getElementById('docTitle').value = '';
+                loadDocuments();
+                alert('✅ 上传成功！');
+            } catch (e) {
+                alert('上传失败: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📎 上传到知识库';
+            }
+        }
+
+        // 加载文档列表
+        async function loadDocuments() {
+            const res = await apiRequest('/api/knowledge/documents');
+            const data = await res.json();
+            const ul = document.getElementById('docList');
+            
+            if (data.total === 0) {
+                ul.innerHTML = '<li style="padding:20px;text-align:center;color:#999;">暂无文档，点击上方按钮添加</li>';
+                return;
+            }
+
+            ul.innerHTML = data.documents.map(d => `
+                <li class="doc-item">
+                    <div>
+                        <strong>${d.title}</strong><br>
+                        <span class="tag tag-${d.category}">${d.category}</span>
+                        <small style="color:#999;">${d.date?.split('T')[0] || ''}</small>
+                    </div>
+                    <button class="delete-btn" onclick="deleteDoc('${d.id}')">删除</button>
+                </li>
+            `).join('');
+        }
+
+        async function deleteDoc(id) {
+            if (!confirm('确认删除？')) return;
+            await apiRequest(`/api/knowledge/document/${id}`, { method: 'DELETE' });
+            loadDocuments();
+        }
+
+        // 搜索
+        async function doSearch() {
+            const q = document.getElementById('searchQuery').value.trim();
+            if (!q) return;
+
+            const fd = new FormData();
+            fd.append('query', q);
+            const res = await apiRequest('/api/knowledge/search', { method: 'POST', body: fd });
+            const data = await res.json();
+            
+            const ul = document.getElementById('searchResults');
+            if (data.results.length === 0) {
+                ul.innerHTML = '<li style="padding:15px;text-align:center;color:#999;">未找到相关结果</li>';
+                return;
+            }
+
+            ul.innerHTML = data.results.map(r => `
+                <li class="doc-item">
+                    <div>
+                        <strong>${r.title}</strong><br>
+                        <span class="tag tag-${r.category}">${r.category}</span>
+                        <small style="color:#999;">相关度: ${r.score}</small>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // AI对话
+        async function doChat() {
+            const q = document.getElementById('chatInput').value.trim();
+            if (!q) return;
+
+            const box = document.getElementById('chatBox');
+            const btn = document.getElementById('btnChat');
+            
+            box.innerHTML += `<div class="chat-msg user">${q}</div>`;
+            btn.disabled = true;
+            btn.textContent = '⏳';
+
+            try {
+                const res = await apiRequest('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question: q })
+                });
+                const data = await res.json();
+                box.innerHTML += `<div class="chat-msg ai">🤖 ${data.answer}</div>`;
+            } catch (e) {
+                box.innerHTML += `<div class="chat-msg ai">⚠️ 请求失败: ${e.message}</div>`;
+            }
+
+            btn.disabled = false;
+            btn.textContent = '💬 提问';
+            document.getElementById('chatInput').value = '';
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // 初始加载
+        loadDocuments();
+    </script>
+</body>
+</html>

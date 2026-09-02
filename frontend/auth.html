@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云上大耳兔 · 登录注册</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 440px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .auth-header {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .auth-header h1 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .auth-header p {
+            color: rgba(255,255,255,0.95);
+            font-size: 14px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            background: #f8f9ff;
+        }
+
+        .auth-body { padding: 30px; }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #495057;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message-box {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message-box.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-box.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden { display: none !important; }
+
+        .footer-text {
+            text-align: center;
+            padding: 20px;
+            color: #adb5bd;
+            font-size: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        @media (max-width: 480px) {
+            .auth-container { border-radius: 16px; }
+            .auth-header { padding: 30px 20px; }
+            .auth-header h1 { font-size: 24px; }
+            .auth-body { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>🐰 云上大耳兔</h1>
+            <p>智慧康复平台 · 从聆听开始的治愈陪伴</p>
+        </div>
+
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchTab('login')">登录</div>
+            <div class="auth-tab" onclick="switchTab('register')">注册</div>
+        </div>
+
+        <div class="auth-body">
+            <div id="messageBox" class="message-box"></div>
+
+            <!-- 登录表单 -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="loginUsername" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="auth-btn" id="loginBtn">🔑 登录</button>
+            </form>
+
+            <!-- 注册表单 -->
+            <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="regUsername" placeholder="请设置用户名" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="regPassword" placeholder="请设置密码（至少6位）" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>昵称（可选）</label>
+                    <input type="text" id="regNickname" placeholder="自定义昵称">
+                </div>
+                <button type="submit" class="auth-btn" id="regBtn">✨ 注册并进入</button>
+            </form>
+        </div>
+
+        <div class="footer-text">Powered by 云上大耳兔 v3.0 · 2026</div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach((t, i) => {
+                t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+            });
+            
+            document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+            hideMessage();
+        }
+
+        function showMessage(text, type) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = `message-box ${type}`;
+        }
+
+        function hideMessage() {
+            document.getElementById('messageBox').className = 'message-box';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ 登录中...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: document.getElementById('loginUsername').value,
+                        password: document.getElementById('loginPassword').value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('auth_token', data.token);
+                    showMessage('登录成功！正在跳转...', 'success');
+                    setTimeout(() => window.location.href = '/dashboard', 1000);
+                } else {
+                    showMessage(data.detail || '登录失败，请检查用户名和密码', 'error');
+                }
+            } catch (err) {
+                showMessage('网络连接失败，请检查后重试', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔑 登录';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('regBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ 注册中...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: document.getElementById('regUsername').value,
+                        password: document.getElementById('regPassword').value,
+                        nickname: document.getElementById('regNickname').value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('auth_token', data.token);
+                    showMessage('注册成功！正在跳转...', 'success');
+                    setTimeout(() => window.location.href = '/dashboard', 1000);
+                } else {
+                    showMessage(data.detail || '注册失败，请检查用户名', 'error');
+                }
+            } catch (err) {
+                showMessage('网络连接失败，请检查后重试', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✨ 注册并进入';
+            }
+        }
+
+        // URL参数自动切换Tab
+        if (window.location.hash === '#register') {
+            switchTab('register');
+        }
+    </script>
+</body>
+</html>
