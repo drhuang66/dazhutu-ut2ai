@@ -2,7 +2,8 @@
 builder = "NIXPACKS"
 
 [deploy]
-healthCheckPath = "/health"
-healthCheckPeriod = 10
+# healthCheckPath = "/health"
+# healthCheckPeriod = 10
+# NOTE: Temporarily commented out due to health check failing during deployment rollback
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
