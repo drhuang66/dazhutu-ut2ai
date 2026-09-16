@@ -1,0 +1,22 @@
+# fly.toml for yunshangtu-v3 (FastAPI + Qdrant on Fly.io)
+app = "yunshangtu"
+primary_region = "sin"  # 新加坡节点，面向亚洲用户
+
+[build]
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 100
+    soft_limit = 50
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
